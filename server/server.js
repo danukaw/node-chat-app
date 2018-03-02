@@ -24,22 +24,32 @@ app.use((req,res, next)=> {
 
 
 io.on('connection', (socket)=>{
-    console.log('new user connected'); 
-    socket.on('disconnect', ()=> {
-        console.log('user disconnected from server');
+    
+    console.log('new user connected');
+
+    socket.emit('newMessage', {
+        from : "Admin",
+        text : "Welcome to chat app"
     });
-    socket.on('createMsg', (msg)=>{
-        console.log('message : ', msg);
+
+    socket.broadcast.emit('newMessage', {
+        from : 'Admin',
+        text : "New user joined"
+    });
+
+    socket.on('createMsg', (msg) => {
+        console.log('createMsg : ', msg);
         io.emit('newMessage', {
             from: msg.from,
-            text: msg.text
+            text: msg.text,
+            createdAt: new Date().getTime()
         })
-        //socioket.emit('chat message', msg);
     });
-    socket.emit('newMessage', {
-        from : "Nimesha",
-        text : 'What are you doing'
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected from server');
     });
+
 });
 
 server.listen(PORT, ()=> {
