@@ -19,9 +19,35 @@
             <button id="user-location">Send location</button>
         </div>
     </div>
+    <script id="message-template" type="text/template">
+        <li class"message">
+            <div class="message__title">
+                <h4>{{from}}</h4>
+                <span>{{time}}</span>
+            </div>
+            <div>
+                <p>{{text}}</p>
+            </div>
+        </li>
+        
+    </script>
+
+    <script id="location-template" type="text/template">
+        <li class"message">
+            <div class="message__title">
+                <h4>{{from}}</h4>
+                <span>{{time}}</span>
+            </div>
+            <div>
+                <a href ="{{link}}" target="_blank">My Location</a>
+            </div>
+        </li>
+    </script>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/libs/jquery-3.3.1.min.js"></script>
     <script src="/js/libs/moment.js"></script>
+    <script src="/js/libs/mustache.js"></script>
     <script src="/js/inedx2.js"></script>
 </body>
 </html>
