@@ -3,12 +3,16 @@ const http = require('http');
 
 const express = require('express');
 const socketIO = require('socket.io');
+
 const {generateMessage,generateLocationMessage} = require('./utils/message');
+const {isRealString} = require('./utils/validation');
+const {User} = require('./utils/users');
 
 let app = express();
 let server = http.createServer(app);
 let io = socketIO(server);
 let publicPath = path.join(__dirname, '../public');
+let user = new User();
 
 let PORT = process.env.PORT || 3000;
 
@@ -29,10 +33,25 @@ io.on('connection', (socket)=>{
     
     console.log('new user connected');
 
-    socket.emit('newMessage', generateMessage('Admin', 'Welcome to chat app'));
+    socket.on('join',(param, callback) => {
+        
+        if(!isRealString(param.name) || !isRealString(param.room)){
+            return callback('name and room is required');
+        } else {
+            callback();
+        }
+        socket.join(param.room);
+        //  add user to list
+        user.addUser(socket.id, param.name, param.room);
+        // emit to all users within the room        
+        io.to(param.room).emit('updateUserlist', user.getUserList(param.room));
 
-    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
-    
+
+        socket.emit('newMessage', generateMessage('Admin', 'Welcome to chat app'));
+        socket.broadcast.to(param.room).emit('newMessage', generateMessage('Admin', `${param.name} joined`));
+
+    });
+
     socket.on('createMsg', (msg,callback) => {
         console.log('createMsg : ', msg);
         io.emit('newMessage', generateMessage(msg.from, msg.text));
@@ -47,6 +66,10 @@ io.on('connection', (socket)=>{
 
     socket.on('disconnect', () => {
         console.log('user disconnected from server');
+        let removedUser = user.removeUser(socket.id);
+        
+        io.to(removedUser.room).emit('updateUserlist', user.getUserList(removedUser.room));
+        io.to(removedUser.room).emit('newMessage', generateMessage('Admin', ` ${removedUser.name} has left the chat`));
     });
 
 });
