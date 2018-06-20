@@ -97,11 +97,12 @@ socket.on('newLocationMessage', function(locationmsg){
 $('#message-form').on('submit', function(e){
     e.preventDefault();
     let sendMessage = $('[name=message]');
+    console.log(sendMessage);
     socket.emit('createMsg', {
-        from : 'user',
         text : sendMessage.val()
-    }, function(){
+    }, function(ack){
         sendMessage.val('');
+        console.log(ack)
     });
 });
 
